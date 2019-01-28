@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Display a map</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.52.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.52.0/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.3.0/mapbox-gl-geocoder.min.js'></script>
+<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.3.0/mapbox-gl-geocoder.css' type='text/css' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+
+  <div id='map'></div>
+
+<script>
+  mapboxgl.accessToken = 'pk.eyJ1IjoiY3Blc2FrIiwiYSI6ImNqbm02Y3hobjAweDMzcW1ibmR2N2wyYXgifQ.ydg4DGF7kw4hwVFQq9zO4w';
+  var map = new mapboxgl.Map({
+    container: 'map', // Container ID
+    style: 'mapbox://styles/cpesak/cjr2hd7mt00gk2smizwbdwpju', // Mapbox style to use
+    center: [-97.454801,29.519225], // Starting position [lng, lat]
+    zoom: 12, // Starting zoom level
+  });
+
+  var marker = new mapboxgl.Marker() // Initialize a new marker
+    .setLngLat([-97.454801,29.519225]) // Marker [lng, lat] coordinates
+    .addTo(map); // Add the marker to the map
+
+  var geocoder = new MapboxGeocoder({ // Initialize the geocoder
+    accessToken: mapboxgl.accessToken, // Set the access token
+    placeholder: 'Search for address', // Placeholder text for the search bar
+    bbox: [-97.497684,29.538997,-97.401640,29.476774], // Boundary for Gonzales
+    proximity: {
+      longitude: -97.454801,
+      latitude: 29.519225
+    } // Coordinates of Gonzales Office
+  });
+
+  // Add the geocoder to the map
+  map.addControl(geocoder);
+
+  // After the map style has loaded on the page,
+  // add a source layer and default styling for a single point
+  map.on('load', function() {
+      map.addSource('single-point', {
+          "type": "geojson",
+          "data": {
+              "type": "FeatureCollection",
+              "features": []
+          }
+      });
+
+      map.addLayer({
+          "id": "point",
+          "source": "single-point",
+          "type": "circle",
+          "paint": {
+              "circle-radius": 10,
+              "circle-color": "#448ee4"
+          }
+      });
+
+      // Listen for the `result` event from the Geocoder // `result` event is triggered when a user makes a selection
+      //  Add a marker at the result's coordinates
+      geocoder.on('result', function(e) {
+          map.getSource('single-point').setData(e.result.geometry);
+      });
+  });
+</script>
+</body>
+</html>
